@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>إنجاز Pro | مديراً لمهامك</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --success: #22c55e;
+            --danger: #f43f5e;
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            --glass: rgba(255, 255, 255, 0.95);
+        }
+
+        body {
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            padding-top: 20px;
+            padding-bottom: 50px;
+        }
+
+        .main-container { 
+            max-width: 800px; 
+            margin: auto; 
+            padding: 15px; 
+        }
+
+        @media (max-width: 576px) {
+            .main-container { max-width: 100%; padding: 10px; }
+            .display-6 { font-size: 1.8rem; }
+        }
+
+        /* تنسيق البحث والزر الجديد في الأعلى */
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            flex-grow: 1;
+            background: white; border-radius: 15px; padding: 10px 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #eee;
+            display: flex; align-items: center;
+        }
+
+        /* زر الإضافة الجديد في الأعلى */
+        .btn-add-top {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 12px 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(99,102,241,0.3);
+            transition: 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-add-top:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .filter-btn {
+            border-radius: 20px; font-size: 0.85rem; transition: 0.3s;
+            border: none; background: white; color: #64748b; padding: 8px 18px;
+            white-space: nowrap;
+        }
+
+        .filter-btn.active { background: var(--primary); color: white; }
+
+        .report-card {
+            background: var(--glass); backdrop-filter: blur(15px);
+            border-radius: 25px; border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.05); margin-bottom: 25px;
+        }
+
+        .task-item {
+            background: white; border-radius: 20px; margin-bottom: 12px;
+            padding: 15px; display: flex; align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            transition: transform 0.2s;
+        }
+        
+        .task-item:hover { transform: translateY(-2px); }
+
+        .timer-badge {
+            font-family: 'Courier New', monospace; font-size: 0.85rem;
+            background: #f1f5f9; color: var(--primary); padding: 4px 10px; border-radius: 10px;
+        }
+
+        .check-btn {
+            width: 32px; height: 32px; border: 2px solid #e2e8f0;
+            border-radius: 50%; margin-left: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .check-btn.completed { background: var(--success); border-color: var(--success); color: white; }
+        .completed-text { text-decoration: line-through; color: #94a3b8 !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="container main-container">
+
+    <div class="header-actions animate__animated animate__fadeIn">
+        <button class="btn-add-top shadow-sm" data-bs-toggle="modal" data-bs-target="#addModal">
+            <i class="fas fa-plus"></i>
+            <span class="d-none d-sm-inline">مهمة جديدة</span>
+        </button>
+
+        <form method="GET" class="flex-grow-1 m-0">
+            <div class="search-box">
+                <i class="fas fa-search text-muted me-2"></i>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control border-0 shadow-none text-end" placeholder="ابحث عن مهمة...">
+            </div>
+        </form>
+    </div>
+
+    <div class="d-flex justify-content-center gap-2 overflow-auto py-1 mb-4">
+        <a href="?" class="filter-btn {% if not category_filter %}active{% endif %} shadow-sm text-decoration-none">الكل</a>
+        <a href="?category=work" class="filter-btn {% if category_filter == 'work' %}active{% endif %} shadow-sm text-decoration-none">💼 عمل</a>
+        <a href="?category=personal" class="filter-btn {% if category_filter == 'personal' %}active{% endif %} shadow-sm text-decoration-none">🏠 شخصي</a>
+        <a href="?category=study" class="filter-btn {% if category_filter == 'study' %}active{% endif %} shadow-sm text-decoration-none">📚 دراسة</a>
+    </div>
+
+    <div class="report-card p-4 animate__animated animate__fadeIn text-end">
+        <div class="row align-items-center">
+            <div class="col-8 col-md-7">
+                <h6 class="fw-bold mb-1">إنجازك اليوم 📈</h6>
+                <div class="mb-2"><span class="display-6 fw-bold text-primary">{{ progress }}%</span></div>
+                <div class="d-flex gap-3 justify-content-end">
+                    <small class="text-muted">مكتمل: <b>{{ completed_count }}</b></small>
+                    <small class="text-muted">متبقي: <b>{{ remaining_count }}</b></small>
+                </div>
+            </div>
+            <div class="col-4 col-md-5"><canvas id="reportChart"></canvas></div>
+        </div>
+    </div>
+
+    <div class="task-list">
+        {% for task in tasks %}
+        <div class="task-item animate__animated animate__fadeInUp">
+            <div class="check-btn {% if task.completed %}completed{% endif %}" onclick="location.href='{% url 'toggle_task' task.id %}'">
+                {% if task.completed %}<i class="fas fa-check"></i>{% endif %}
+            </div>
+
+            <div class="flex-grow-1 overflow-hidden">
+                <h6 class="mb-1 fw-bold {% if task.completed %}completed-text{% endif %} text-truncate" style="color: #334155;">
+                    {{ task.title }}
+                    <span class="badge bg-light text-muted fw-normal ms-1" style="font-size: 0.6rem;">{{ task.get_category_display }}</span>
+                </h6>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="timer-badge" id="display-{{ task.id }}">{{ task.get_duration_display }}</span>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-1">
+                <button class="btn btn-sm btn-light rounded-pill px-2 text-primary shadow-sm" onclick="toggleTimer({{ task.id }})" id="btn-{{ task.id }}">
+                    <i class="fas fa-play" id="icon-{{ task.id }}"></i>
+                </button>
+                <button class="btn btn-sm btn-light rounded-pill px-2 text-warning shadow-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ task.id }}">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="confirmDelete('{% url 'delete_task' task.id %}')" class="btn btn-link text-danger p-0 border-0 opacity-25">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="modal fade" id="editModal{{ task.id }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 rounded-4 shadow-lg">
+                    <div class="modal-body p-4 text-end">
+                        <h5 class="fw-bold mb-4">✏️ تعديل المهمة</h5>
+                        <form method="POST" action="{% url 'edit_task' task.id %}">
+                            {% csrf_token %}
+                            <input type="text" name="title" value="{{ task.title }}" class="form-control form-control-lg border-0 bg-light rounded-4 mb-3 text-end" required>
+                            <div class="d-flex gap-2 mb-4" dir="rtl">
+                                <input type="radio" class="btn-check" name="category" id="ecp{{ task.id }}" value="personal" {% if task.category == 'personal' %}checked{% endif %}>
+                                <label class="btn btn-outline-primary flex-grow-1 rounded-pill" for="ecp{{ task.id }}">🏠 شخصي</label>
+                                <input type="radio" class="btn-check" name="category" id="ecw{{ task.id }}" value="work" {% if task.category == 'work' %}checked{% endif %}>
+                                <label class="btn btn-outline-primary flex-grow-1 rounded-pill" for="ecw{{ task.id }}">💼 عمل</label>
+                                <input type="radio" class="btn-check" name="category" id="ecs{{ task.id }}" value="study" {% if task.category == 'study' %}checked{% endif %}>
+                                <label class="btn btn-outline-primary flex-grow-1 rounded-pill" for="ecs{{ task.id }}">📚 دراسة</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-3 rounded-4 fw-bold">حفظ التغييرات</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5 opacity-50">
+            <i class="fas fa-clipboard-check fa-3x mb-3"></i>
+            <p>لا يوجد مهام.. أضف مهمة جديدة للبدء!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-body p-4 text-end">
+                <h5 class="fw-bold mb-4">✨ مهمة جديدة</h5>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="text" name="title" class="form-control form-control-lg border-0 bg-light rounded-4 mb-3 text-end" placeholder="ماذا تريد أن تنجز؟" required>
+                    <div class="d-flex gap-2 mb-4" dir="rtl">
+                        <input type="radio" class="btn-check" name="category" id="cp" value="personal" checked>
+                        <label class="btn btn-outline-primary flex-grow-1 rounded-pill" for="cp">🏠 شخصي</label>
+                        <input type="radio" class="btn-check" name="category" id="cw" value="work">
+                        <label class="btn btn-outline-primary flex-grow-1 rounded-pill" for="cw">💼 عمل</label>
+                        <input type="radio" class="btn-check" name="category" id="cs" value="study">
+                        <label class="btn btn-outline-primary flex-grow-1 rounded-pill" for="cs">📚 دراسة</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-3 rounded-4 fw-bold">حفظ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // الرسم البياني (باقي الكود كما هو لضمان الوظائف)
+    const ctx = document.getElementById('reportChart').getContext('2d');
+    const completed = parseInt("{{ completed_count|default:0 }}");
+    const remaining = parseInt("{{ remaining_count|default:0 }}");
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: (completed === 0 && remaining === 0) ? [0, 1] : [completed, remaining],
+                backgroundColor: (completed === 0 && remaining === 0) ? ['#e2e8f0', '#e2e8f0'] : ['#6366f1', '#e2e8f0'],
+                borderWidth: 0,
+                borderRadius: 15
+            }]
+        },
+        options: { cutout: '80%', plugins: { legend: { display: false } }, responsive: true }
+    });
+
+    let activeTimers = {};
+    function toggleTimer(id) {
+        const btn = document.getElementById(`btn-${id}`);
+        const icon = document.getElementById(`icon-${id}`);
+        const display = document.getElementById(`display-${id}`);
+
+        if (activeTimers[id]) {
+            clearInterval(activeTimers[id].interval);
+            saveTimeToDB(id, activeTimers[id].totalSeconds);
+            delete activeTimers[id];
+            icon.className = 'fas fa-play';
+            btn.classList.replace('btn-primary', 'btn-light');
+            btn.classList.remove('animate__animated', 'animate__pulse', 'animate__infinite');
+        } else {
+            let totalSeconds = parseTime(display.innerText);
+            icon.className = 'fas fa-pause';
+            btn.classList.replace('btn-light', 'btn-primary');
+            btn.classList.add('animate__animated', 'animate__pulse', 'animate__infinite');
+            activeTimers[id] = {
+                totalSeconds: totalSeconds,
+                interval: setInterval(() => {
+                    activeTimers[id].totalSeconds++;
+                    display.innerText = formatTime(activeTimers[id].totalSeconds);
+                }, 1000)
+            };
+        }
+    }
+
+    function formatTime(s) {
+        const hrs = Math.floor(s / 3600).toString().padStart(2, '0');
+        const mins = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+        const secs = (s % 60).toString().padStart(2, '0');
+        return `${hrs}:${mins}:${secs}`;
+    }
+
+    function parseTime(str) {
+        const p = str.split(':');
+        if (p.length === 3) return (+p[0]) * 3600 + (+p[1]) * 60 + (+p[2]);
+        return 0;
+    }
+
+    function saveTimeToDB(taskId, seconds) {
+        const formData = new FormData();
+        formData.append('seconds', seconds);
+        fetch(`/update-duration/${taskId}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value}
+        }).catch(err => console.error(err));
+    }
+
+    function confirmDelete(url) {
+        Swal.fire({
+            title: 'هل أنت متأكد؟',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#f43f5e',
+            confirmButtonText: 'نعم، احذف',
+            cancelButtonText: 'إلغاء'
+        }).then((result) => {
+            if (result.isConfirmed) window.location.href = url;
+        });
+    }
+</script>
+</body>
+</html>
