@@ -1,4 +1,4 @@
-venvpro/
+venvpro/git 
 __pycache__/
 db.sqlite3
 .idea/
